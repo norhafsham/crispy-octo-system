@@ -1,0 +1,27 @@
+{
+  "name": "safe-arithmetic-operations",
+  "version": "1.0.0",
+  "description": "Safe arithmetic operations with overflow/underflow checks and event emission examples for TypeScript",
+  "main": "src/arithmetic-utils.ts",
+  "scripts": {
+    "example": "ts-node src/examples.ts",
+    "event-example": "ts-node src/event-emission-examples.ts",
+    "build": "tsc",
+    "check": "tsc --noEmit"
+  },
+  "keywords": [
+    "arithmetic",
+    "overflow",
+    "security",
+    "validation",
+    "event-emission",
+    "smart-contracts"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}
