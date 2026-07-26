@@ -119,7 +119,7 @@ Comprehensive reference guide (12+ KB) covering:
 - Migration path for existing contracts
 - References and resources
 
-#### 2. `src/storage-optimization-examples.ts`
+#### 2. [`src/storage-optimization-examples.ts`](../src/storage-optimization-examples.ts)
 Runnable TypeScript code (15+ KB) demonstrating:
 - All 5 optimization patterns
 - Side-by-side inefficient vs. efficient implementations
@@ -127,6 +127,16 @@ Runnable TypeScript code (15+ KB) demonstrating:
 - Test data generation
 - Performance timing measurements
 - Comprehensive summary with key takeaways
+
+Each pattern below maps directly onto this implementation:
+
+| Pattern | Implementation |
+|---------|----------------|
+| Pattern 1: Cache Array in Memory | `inefficientArrayAccess()` / `efficientArrayAccess()` |
+| Pattern 2: Cache Struct Fields | `inefficientStructAccess()` / `efficientStructAccess()` |
+| Pattern 3: Use Mappings for Lookups | `inefficientLinearSearch()` / `efficientMappingLookup()` |
+| Pattern 4: Single-Pass Aggregation | `inefficientMultiPassAggregation()` / `efficientSinglePassAggregation()` |
+| Pattern 5: Batch Operations | `inefficientBatchUpdates()` / `efficientBatchUpdates()` |
 
 ### Modified Files
 
