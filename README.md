@@ -195,6 +195,7 @@ npm run start
 - [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning)
 - [CodeQL Documentation](https://codeql.github.com/)
 - [JavaScript Arithmetic Operators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_Operators#arithmetic_operators)
+- [MarkItDown Setup Guide](docs/MARKITDOWN_SETUP.md) - installing/using Microsoft's MarkItDown tool for converting reference docs to Markdown
 
 ## 📝 License
 
