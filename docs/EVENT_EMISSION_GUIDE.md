@@ -6,6 +6,8 @@ This guide provides comprehensive solutions to **GitHub Issue #1: Missing Event 
 
 The runnable counterpart to this guide is [`src/event-emission-examples.ts`](../src/event-emission-examples.ts), which models these patterns with Node's `EventEmitter` in plain TypeScript rather than real Solidity/EVM code.
 
+**Status:** Resolved. All four patterns below (state changes, transfers, approvals/allowances, role management) are implemented and runnable via `npm run event-example`. Closes #1.
+
 ---
 
 ## Problem Statement
