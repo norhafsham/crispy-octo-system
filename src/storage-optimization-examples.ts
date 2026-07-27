@@ -11,7 +11,7 @@
 /**
  * User struct representing a simple user record
  */
-interface User {
+export interface User {
   id: number;
   address: string;
   points: number;
@@ -23,7 +23,7 @@ interface User {
 /**
  * Batch update representing a transaction
  */
-interface Update {
+export interface Update {
   userId: number;
   amount: number;
   operation: 'add' | 'subtract';
@@ -32,7 +32,7 @@ interface Update {
 /**
  * Simulated "storage" - in real contracts, this would be contract state
  */
-class StorageSimulator {
+export class StorageSimulator {
   users: User[] = [];
   userMap: Map<number, User> = new Map();
 
@@ -50,7 +50,7 @@ class StorageSimulator {
  * ❌ INEFFICIENT: Multiple storage reads in loop
  * Simulates accessing storage array multiple times
  */
-function inefficientArrayAccess(storage: StorageSimulator): number {
+export function inefficientArrayAccess(storage: StorageSimulator): number {
   let totalPoints = 0;
   const startTime = performance.now();
 
@@ -79,7 +79,7 @@ function inefficientArrayAccess(storage: StorageSimulator): number {
  * ✅ EFFICIENT: Cache array in memory before loop
  * Simulates caching storage to memory
  */
-function efficientArrayAccess(storage: StorageSimulator): number {
+export function efficientArrayAccess(storage: StorageSimulator): number {
   // Single storage read - cache entire array to memory
   const cachedUsers = storage.users; // In real contracts: User[] memory cachedUsers = users;
   const cachedLength = cachedUsers.length;
@@ -115,7 +115,7 @@ function efficientArrayAccess(storage: StorageSimulator): number {
 /**
  * ❌ INEFFICIENT: Accessing multiple struct fields separately
  */
-function inefficientStructAccess(user: User): number {
+export function inefficientStructAccess(user: User): number {
   let result = 0;
 
   // Each field access is a separate storage read
@@ -139,7 +139,7 @@ function inefficientStructAccess(user: User): number {
 /**
  * ✅ EFFICIENT: Cache struct to memory first
  */
-function efficientStructAccess(user: User): number {
+export function efficientStructAccess(user: User): number {
   // Single storage read - cache entire struct to memory
   const cachedUser = user; // In real contracts: User memory cachedUser = storageUser;
   let result = 0;
@@ -169,7 +169,7 @@ function efficientStructAccess(user: User): number {
 /**
  * ❌ INEFFICIENT: Linear search through storage array
  */
-function inefficientLinearSearch(storage: StorageSimulator, userId: number): User | null {
+export function inefficientLinearSearch(storage: StorageSimulator, userId: number): User | null {
   let operations = 0;
   const startTime = performance.now();
 
@@ -198,7 +198,7 @@ function inefficientLinearSearch(storage: StorageSimulator, userId: number): Use
 /**
  * ✅ EFFICIENT: Use mapping for O(1) lookup
  */
-function efficientMappingLookup(storage: StorageSimulator, userId: number): User | null {
+export function efficientMappingLookup(storage: StorageSimulator, userId: number): User | null {
   const startTime = performance.now();
 
   // O(1) lookup with single storage read
@@ -225,7 +225,7 @@ function efficientMappingLookup(storage: StorageSimulator, userId: number): User
 /**
  * ❌ INEFFICIENT: Multiple passes through storage
  */
-function inefficientMultiPassAggregation(storage: StorageSimulator): {
+export function inefficientMultiPassAggregation(storage: StorageSimulator): {
   totalPoints: number;
   activeCount: number;
   averageLevel: number;
@@ -269,7 +269,7 @@ function inefficientMultiPassAggregation(storage: StorageSimulator): {
 /**
  * ✅ EFFICIENT: Single pass through cached data
  */
-function efficientSinglePassAggregation(storage: StorageSimulator): {
+export function efficientSinglePassAggregation(storage: StorageSimulator): {
   totalPoints: number;
   activeCount: number;
   averageLevel: number;
@@ -316,7 +316,7 @@ function efficientSinglePassAggregation(storage: StorageSimulator): {
 /**
  * ❌ INEFFICIENT: Nested loops with repeated lookups
  */
-function inefficientBatchUpdates(storage: StorageSimulator, updates: Update[]): void {
+export function inefficientBatchUpdates(storage: StorageSimulator, updates: Update[]): void {
   const startTime = performance.now();
 
   for (let i = 0; i < updates.length; i++) {
@@ -348,7 +348,7 @@ function inefficientBatchUpdates(storage: StorageSimulator, updates: Update[]): 
 /**
  * ✅ EFFICIENT: Use mapping for O(1) lookups
  */
-function efficientBatchUpdates(storage: StorageSimulator, updates: Update[]): void {
+export function efficientBatchUpdates(storage: StorageSimulator, updates: Update[]): void {
   const startTime = performance.now();
 
   // O(1) lookups using map
@@ -381,7 +381,7 @@ function efficientBatchUpdates(storage: StorageSimulator, updates: Update[]): vo
 // SETUP AND MAIN EXECUTION
 // ============================================================================
 
-function generateTestData(): StorageSimulator {
+export function generateTestData(): StorageSimulator {
   const storage = new StorageSimulator();
 
   // Create 100 sample users
@@ -400,7 +400,7 @@ function generateTestData(): StorageSimulator {
   return storage;
 }
 
-function generateTestUpdates(count: number): Update[] {
+export function generateTestUpdates(count: number): Update[] {
   const updates: Update[] = [];
   for (let i = 0; i < count; i++) {
     updates.push({
