@@ -4,6 +4,8 @@
  * Addresses GitHub Issue #2: Inefficient Storage Usage
  */
 
+import { randomInt } from 'crypto';
+
 // ============================================================================
 // DATA STRUCTURES
 // ============================================================================
@@ -415,10 +417,10 @@ export function generateTestData(): StorageSimulator {
     const user: User = {
       id: i,
       address: `0x${i.toString().padStart(40, '0')}`,
-      points: Math.floor(Math.random() * 1000),
-      active: Math.random() > 0.3,
-      verified: Math.random() > 0.4,
-      level: Math.floor(Math.random() * 10) + 1,
+      points: randomInt(0, 1000),
+      active: randomInt(0, 10) > 3,
+      verified: randomInt(0, 10) > 4,
+      level: randomInt(1, 11),
     };
     storage.addUser(user);
   }
@@ -430,9 +432,9 @@ export function generateTestUpdates(count: number): Update[] {
   const updates: Update[] = [];
   for (let i = 0; i < count; i++) {
     updates.push({
-      userId: Math.floor(Math.random() * 100) + 1,
-      amount: Math.floor(Math.random() * 100) + 1,
-      operation: Math.random() > 0.5 ? 'add' : 'subtract',
+      userId: randomInt(1, 101),
+      amount: randomInt(1, 101),
+      operation: randomInt(0, 2) === 1 ? 'add' : 'subtract',
     });
   }
   return updates;
