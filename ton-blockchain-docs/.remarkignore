@@ -1,0 +1,27 @@
+# Ignore folders
+node_modules/
+/pending/
+/stats/
+.source
+/coverage
+/.next/
+/out/
+/build
+/.ctx/
+
+# Ignore some whitepapers
+/content/languages/fift/whitepaper.mdx
+/content/foundations/whitepapers/tblkch.mdx
+/content/foundations/whitepapers/ton.mdx
+/content/foundations/whitepapers/tvm.mdx
+
+# Ignore generated files and directories
+/content/tvm/instructions.mdx
+/content/api/v2/
+/content/api/v3/
+/content/api/smc-index/
+
+# Ignore some other files
+/content/index.mdx
+/LICENSE*
+*.tsbuildinfo

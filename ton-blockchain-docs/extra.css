@@ -1,0 +1,45 @@
+/* See: https://mintlify.com/docs/settings/custom-scripts#custom-css */
+
+/* Fixing width of the API reference navigation tags */
+span.method-nav-pill {
+  width: fit-content;
+  /* or 3rem */
+}
+
+/* Make links not bold */
+.link {
+  font-weight: 400;
+}
+
+/* Enhance links that wrap inline code snippets */
+
+.link:has(code) {
+  padding-bottom: 3px;
+}
+
+.link > code {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  text-decoration: none;
+}
+
+/* Sticky table headers */
+
+table {
+  overflow: unset !important;
+}
+
+thead > tr > th {
+  position: sticky;
+  top: 0;
+  background: rgb(var(--background-light));
+}
+
+html.dark thead > tr > th {
+  background: rgb(var(--background-dark));
+}
+
+/* Reduction of bottom margins for code blocks as last items of <Aside> components */
+div[data-component-part='callout-content'] > .code-block:last-child {
+  margin-bottom: 0;
+}
