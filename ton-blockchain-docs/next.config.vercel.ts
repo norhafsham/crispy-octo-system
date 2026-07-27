@@ -5,7 +5,15 @@ import type { Redirect } from 'next/dist/lib/load-custom-routes';
 import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
-const isVercelProd = resolveBaseUrl().startsWith('https://docs.ton.org');
+const isVercelProd = isProdDocsUrl(resolveBaseUrl());
+
+function isProdDocsUrl(url: string): boolean {
+  try {
+    return new URL(url).hostname === 'docs.ton.org';
+  } catch {
+    return false;
+  }
+}
 
 type DocsConfig = {
   redirects?: Redirect[];

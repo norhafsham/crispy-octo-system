@@ -8,8 +8,16 @@ const withMDX = createMDX();
 const isGitHubPagesBuild =
   process.env.GITHUB_ACTIONS === 'true' || process.env.GITHUB_PAGES === 'true';
 const isVercelBuild = process.env.VERCEL === '1';
-const isVercelProd = isVercelBuild && resolveBaseUrl().startsWith('https://docs.ton.org');
+const isVercelProd = isVercelBuild && isProdDocsUrl(resolveBaseUrl());
 const isLocalBuild = !isGitHubPagesBuild && !isVercelBuild;
+
+function isProdDocsUrl(url: string): boolean {
+  try {
+    return new URL(url).hostname === 'docs.ton.org';
+  } catch {
+    return false;
+  }
+}
 let gitRepoMatch: RegExpMatchArray | null = null;
 try {
   const gitUrl = execSync('git config --get remote.origin.url', {
