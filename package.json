@@ -8,7 +8,8 @@
     "event-example": "ts-node src/event-emission-examples.ts",
     "storage-example": "ts-node src/storage-optimization-examples.ts",
     "build": "tsc",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "keywords": [
     "arithmetic",
@@ -24,7 +25,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
     "typescript": "^5.0.0",
-    "ts-node": "^10.9.0"
+    "vitest": "^4.1.10"
   }
 }

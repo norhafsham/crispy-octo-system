@@ -18,7 +18,7 @@ import { EventEmitter } from 'events';
 /**
  * Basic pattern: emit an event any time tracked state changes.
  */
-class StatefulCounter extends EventEmitter {
+export class StatefulCounter extends EventEmitter {
   private value = 0;
 
   setValue(newValue: number): void {
@@ -54,7 +54,7 @@ export function stateChangeExample(): void {
  * a Transfer event with enough context (from, to, amount) to reconstruct
  * the full transaction history off-chain.
  */
-class Token extends EventEmitter {
+export class Token extends EventEmitter {
   private balances = new Map<string, number>();
   private allowances = new Map<string, Map<string, number>>();
 
@@ -145,7 +145,7 @@ export function allowanceExample(): void {
  * Access control changes are security-sensitive and must be auditable -
  * every grant/revoke emits an event with who changed what and for whom.
  */
-class AccessControl extends EventEmitter {
+export class AccessControl extends EventEmitter {
   private roles = new Map<string, Set<string>>();
 
   grantRole(role: string, account: string, grantedBy: string): void {

@@ -9,27 +9,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **`src/arithmetic-utils.ts`** is a real, self-contained safe-math library (overflow/underflow-checked arithmetic against JS's `Number.MAX_SAFE_INTEGER` / `MIN_SAFE_INTEGER` range).
 2. **`src/event-emission-examples.ts`** and **`src/storage-optimization-examples.ts`** are *simulations* written to answer two GitHub issues about Solidity/EVM smart-contract patterns (event emission, storage gas costs). They use plain TypeScript/Node `EventEmitter` and hand-rolled "estimated gas" arithmetic to model Solidity behavior — there is no real blockchain, contract, or gas metering involved. Don't confuse the `estimatedGas` numbers in that file for anything measured; they're illustrative constants (`SLOAD` ≈ 2100, memory access ≈ 3).
 
-There are no runtime dependencies — only TypeScript/ts-node as dev dependencies.
+There are no runtime dependencies — TypeScript/ts-node and vitest are the only dev dependencies.
 
 ## Commands
 
 ```bash
-npm install          # install dev dependencies (typescript, ts-node, @types/node)
+npm install          # install dev dependencies (typescript, ts-node, vitest, @types/node)
 npm run check         # tsc --noEmit — typecheck the whole src/ tree
+npm test               # vitest run — run the unit test suite (*.test.ts next to each source file)
 npm run build          # tsc — emit compiled JS + declarations to dist/
 npm run example         # ts-node src/examples.ts — safe-arithmetic demos
 npm run event-example    # ts-node src/event-emission-examples.ts
 npm run storage-example   # ts-node src/storage-optimization-examples.ts
 ```
 
-There is **no test runner and no lint config** in this repo (no `test` script, no jest/mocha/vitest, no eslint config), despite some `docs/*.md` files referencing `npm test` / `npm run test:gas` — those refer to a hypothetical Hardhat/Foundry setup for actual Solidity contracts, not to anything present here. To sanity-check a change, run `npm run check` for types and `npm run example` / `npm run event-example` / `npm run storage-example` to exercise the code paths (each file also runs its own demo when executed directly, guarded by `if (require.main === module)`).
+There is **no lint config** in this repo (no eslint config), despite some `docs/*.md` files referencing `npm run test:gas` — that refers to a hypothetical Hardhat/Foundry setup for actual Solidity contracts, not to anything present here. To sanity-check a change, run `npm run check` for types, `npm test` for unit tests, and `npm run example` / `npm run event-example` / `npm run storage-example` to exercise the code paths end-to-end (each file also runs its own demo when executed directly, guarded by `if (require.main === module)`).
+
+Test files live alongside their source (`src/arithmetic-utils.test.ts`, `src/examples.test.ts`, `src/event-emission-examples.test.ts`, `src/storage-optimization-examples.test.ts`). `event-emission-examples.ts` and `storage-optimization-examples.ts` export their internal classes/functions (`Token`, `AccessControl`, `StatefulCounter`, the `inefficientX`/`efficientX` pattern functions, `StorageSimulator`) specifically so tests can exercise them directly rather than scraping console output — keep those exports if you touch either file.
 
 To exercise a single exported function without running a whole file's demo block, import it via `ts-node -e`, e.g.:
 ```bash
 npx ts-node -e "import { safeAdd } from './src/arithmetic-utils'; console.log(safeAdd(2, 3))"
 ```
 
-CI is CodeQL only (`.github/workflows/codeql.yml`): static analysis on push/PR to `main` and weekly (Sundays 00:00 UTC). There is no build/test gate in CI.
+CI runs CodeQL (`.github/workflows/codeql.yml`, static analysis on push/PR to `main` and weekly) and a test workflow (`.github/workflows/test.yml`: `npm run check` + `npm test` on push/PR to `main`).
 
 ## Architecture
 
