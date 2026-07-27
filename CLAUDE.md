@@ -31,13 +31,15 @@ npx ts-node -e "import { safeAdd } from './src/arithmetic-utils'; console.log(sa
 
 CI is CodeQL only (`.github/workflows/codeql.yml`): static analysis on push/PR to `main` and weekly (Sundays 00:00 UTC). There is no build/test gate in CI.
 
+`tsconfig.json` has `strict: true` (ES2020, commonjs, rootDir `src` → outDir `dist`). Code throughout relies on strict-mode patterns (`??`, `?.`, non-null `!` only where a prior check guarantees presence) — keep new code compiling clean under strict mode rather than loosening the config.
+
 ## Architecture
 
 - **`src/arithmetic-utils.ts`** — the only "product" module. Every operation (`safeAdd`, `safeSubtract`, `safeMultiply`, `safeDivide`, `safeModulo`, `safePower`, `safeIncrement`, `safeDecrement`) follows the same shape: validate operands with `validateSafeInteger`, compute, then validate the result too, throwing `ArithmeticError` (a named `Error` subclass) on any out-of-range value or division/modulo by zero. `isWithinSafeRange`/`getSafeRange`/`validateSafeInteger` are the shared primitives everything else is built from — extend this file by composing them rather than re-implementing range checks.
 - **`src/examples.ts`** — consumes `arithmetic-utils.ts` and demonstrates it via a `BankAccount` and `SafeCounter` class plus standalone example functions; this is the reference for how the safe-math API is meant to be used (try/catch around every call, checking `instanceof ArithmeticError`).
 - **`src/event-emission-examples.ts`** — four independent `EventEmitter` subclasses (`StatefulCounter`, `Token`, `AccessControl`) each modeling one smart-contract event pattern (state-change events, ERC20-style Transfer/Approval, role-based access control). Written for GitHub Issue #1 ("Missing Event Emission"); the pattern to preserve if extending is "every state-changing method emits an event with enough context to reconstruct history off-chain."
 - **`src/storage-optimization-examples.ts`** — paired `inefficientX`/`efficientX` functions (array access, struct-field access, lookup, aggregation, batch updates) over a `StorageSimulator`, each pair logging a simulated gas cost so the "before vs. after" contrast is visible when run. Written for GitHub Issue #2 ("Inefficient Storage Usage"). If adding a new pattern here, keep the inefficient/efficient pairing and the `estimatedGas` logging convention.
-- **`docs/`** — reference material, not code: `STORAGE_OPTIMIZATION_GUIDE.md` mirrors the patterns in `storage-optimization-examples.ts` but in Solidity; `PR_SUGGESTIONS.md` and `PR_TEMPLATE_STORAGE_OPTIMIZATION.md` are pre-written PR descriptions for issues #1 and #2, kept as historical templates rather than living docs.
+- **`docs/`** — reference material, not code: `STORAGE_OPTIMIZATION_GUIDE.md` mirrors the patterns in `storage-optimization-examples.ts` but in Solidity; `PR_SUGGESTIONS.md` and `PR_TEMPLATE_STORAGE_OPTIMIZATION.md` are pre-written PR descriptions for issues #1 and #2, kept as historical templates rather than living docs. Note: `PR_SUGGESTIONS.md` references a `docs/EVENT_EMISSION_GUIDE.md` that was never actually added to this repo — don't treat that path as real, and don't "fix" the docs to add it unless asked.
 
 ## graphify
 - **graphify** (`.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
