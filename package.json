@@ -8,7 +8,8 @@
     "event-example": "ts-node src/event-emission-examples.ts",
     "storage-example": "ts-node src/storage-optimization-examples.ts",
     "build": "tsc",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "jest"
   },
   "keywords": [
     "arithmetic",
@@ -23,8 +24,11 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.0"
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.12",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
   }
 }
