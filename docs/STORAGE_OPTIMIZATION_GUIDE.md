@@ -4,6 +4,10 @@
 
 This guide provides comprehensive solutions to **GitHub Issue #2: Inefficient Storage Usage**. It demonstrates practical patterns for optimizing storage access patterns in smart contracts, particularly when handling loops and multiple reads.
 
+The runnable counterpart to this guide is [`src/storage-optimization-examples.ts`](../src/storage-optimization-examples.ts), which simulates all five patterns below (array caching, struct caching, mapping lookups, single-pass aggregation, batch updates) in plain TypeScript with illustrative gas estimates.
+
+**Status:** Resolved. Closes #2.
+
 ---
 
 ## Problem Statement
