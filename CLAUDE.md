@@ -32,7 +32,7 @@ To exercise a single exported function without running a whole file's demo block
 npx ts-node -e "import { safeAdd } from './src/arithmetic-utils'; console.log(safeAdd(2, 3))"
 ```
 
-CI is CodeQL only (`.github/workflows/codeql.yml`): static analysis on push/PR to `main` and weekly (Sundays 00:00 UTC). There is no build/test gate in CI.
+CI (`.github/workflows/codeql.yml`) has two jobs: `test` (npm ci, `npm run check`, `npm test`) on push/PR to `main` only, and `analyze` (CodeQL static analysis) on push/PR to `main` and weekly (Sundays 00:00 UTC). The `test` job is skipped on the scheduled run (`if: github.event_name != 'schedule'`) since there's nothing new to test.
 
 ## Architecture
 
