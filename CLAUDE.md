@@ -45,6 +45,8 @@ CI runs CodeQL (`.github/workflows/codeql.yml`, static analysis on push/PR to `m
 - **`src/storage-optimization-examples.ts`** — paired `inefficientX`/`efficientX` functions (array access, struct-field access, lookup, aggregation, batch updates) over a `StorageSimulator`, each pair logging a simulated gas cost so the "before vs. after" contrast is visible when run. Written for GitHub Issue #2 ("Inefficient Storage Usage"). If adding a new pattern here, keep the inefficient/efficient pairing and the `estimatedGas` logging convention.
 - **`docs/`** — reference material, not code: `EVENT_EMISSION_GUIDE.md` and `STORAGE_OPTIMIZATION_GUIDE.md` mirror the patterns in `event-emission-examples.ts` and `storage-optimization-examples.ts` respectively but in Solidity; `PR_SUGGESTIONS.md` and `PR_TEMPLATE_STORAGE_OPTIMIZATION.md` are pre-written PR descriptions for issues #1 and #2, kept as historical templates rather than living docs.
 
+Bad-vs-good contrasts are marked inline with ❌/✅ in both code and docs (`event-emission-examples.ts`, `storage-optimization-examples.ts`, and the four `docs/*.md` files) — keep that style consistent when extending existing files.
+
 ## graphify
 - **graphify** (`.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
