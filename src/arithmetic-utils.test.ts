@@ -146,6 +146,63 @@ describe('safeIncrement / safeDecrement', () => {
   });
 });
 
+describe('negative zero normalization', () => {
+  // IEEE 754 produces -0 from several ordinary operations. It passes range
+  // validation (Number.isInteger(-0) is true), so without normalization it
+  // reaches callers and compares unequal to 0 under Object.is - which is
+  // exactly what `toBe` uses, so these assertions fail on a raw -0.
+  it('returns +0 from multiplication by a negative operand', () => {
+    expect(safeMultiply(0, -5)).toBe(0);
+    expect(safeMultiply(-5, 0)).toBe(0);
+    expect(Object.is(safeMultiply(0, -5), -0)).toBe(false);
+  });
+
+  it('returns +0 from division producing a signed zero', () => {
+    expect(safeDivide(-0, 5)).toBe(0);
+    expect(safeDivide(0, -5)).toBe(0);
+    expect(Object.is(safeDivide(0, -5), -0)).toBe(false);
+  });
+
+  it('returns +0 from a modulo that divides evenly into a negative', () => {
+    expect(safeModulo(-5, 5)).toBe(0);
+    expect(Object.is(safeModulo(-5, 5), -0)).toBe(false);
+  });
+
+  it('returns +0 from addition and subtraction of signed zeros', () => {
+    expect(safeAdd(-0, -0)).toBe(0);
+    expect(safeSubtract(-0, 0)).toBe(0);
+  });
+
+  it('returns +0 from a power with a negative-zero base', () => {
+    expect(safePower(-0, 3)).toBe(0);
+    expect(Object.is(safePower(-0, 3), -0)).toBe(false);
+  });
+
+  it('leaves every non-zero result untouched', () => {
+    expect(safeMultiply(-5, 3)).toBe(-15);
+    expect(safeDivide(-10, 5)).toBe(-2);
+    expect(safeModulo(-7, 5)).toBe(-2);
+    expect(safePower(-2, 3)).toBe(-8);
+  });
+});
+
+describe('additional edge cases', () => {
+  it('treats anything to the power of zero as 1', () => {
+    expect(safePower(0, 0)).toBe(1);
+    expect(safePower(5, 0)).toBe(1);
+  });
+
+  it('handles negative bases with odd and even exponents', () => {
+    expect(safePower(-2, 3)).toBe(-8);
+    expect(safePower(-2, 4)).toBe(16);
+  });
+
+  it('accepts a negative divisor and dividend', () => {
+    expect(safeDivide(-100, -50)).toBe(2);
+    expect(safeDivide(100, -50)).toBe(-2);
+  });
+});
+
 describe('ArithmeticError', () => {
   it('is a proper Error subclass carrying the message', () => {
     const error = new ArithmeticError('boom');

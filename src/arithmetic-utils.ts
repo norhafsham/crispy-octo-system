@@ -34,28 +34,37 @@ export function validateSafeInteger(value: number): void {
   }
 }
 
+/**
+ * Validate an operation's result and normalize negative zero to positive zero.
+ *
+ * IEEE 754 has two zeros, and ordinary operations produce the negative one
+ * (`0 * -5`, `-5 % 5`, `-0 / 5`). `Number.isInteger(-0)` is true, so range
+ * validation alone lets it through to callers, where it compares unequal to 0
+ * under `Object.is` — which is what `===`-style identity checks and most test
+ * assertions use. Every operation below returns through here so a result of
+ * zero is always +0.
+ */
+function normalizeResult(value: number): number {
+  validateSafeInteger(value);
+  return value === 0 ? 0 : value;
+}
+
 export function safeAdd(a: number, b: number): number {
   validateSafeInteger(a);
   validateSafeInteger(b);
-  const result = a + b;
-  validateSafeInteger(result);
-  return result;
+  return normalizeResult(a + b);
 }
 
 export function safeSubtract(a: number, b: number): number {
   validateSafeInteger(a);
   validateSafeInteger(b);
-  const result = a - b;
-  validateSafeInteger(result);
-  return result;
+  return normalizeResult(a - b);
 }
 
 export function safeMultiply(a: number, b: number): number {
   validateSafeInteger(a);
   validateSafeInteger(b);
-  const result = a * b;
-  validateSafeInteger(result);
-  return result;
+  return normalizeResult(a * b);
 }
 
 export function safeDivide(a: number, b: number): number {
@@ -64,9 +73,7 @@ export function safeDivide(a: number, b: number): number {
   if (b === 0) {
     throw new ArithmeticError('Division by zero');
   }
-  const result = a / b;
-  validateSafeInteger(result);
-  return result;
+  return normalizeResult(a / b);
 }
 
 export function safeIncrement(value: number): number {
@@ -83,15 +90,11 @@ export function safeModulo(a: number, b: number): number {
   if (b === 0) {
     throw new ArithmeticError('Modulo by zero');
   }
-  const result = a % b;
-  validateSafeInteger(result);
-  return result;
+  return normalizeResult(a % b);
 }
 
 export function safePower(base: number, exponent: number): number {
   validateSafeInteger(base);
   validateSafeInteger(exponent);
-  const result = Math.pow(base, exponent);
-  validateSafeInteger(result);
-  return result;
+  return normalizeResult(Math.pow(base, exponent));
 }

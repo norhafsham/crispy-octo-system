@@ -61,32 +61,65 @@ export function overflowDetectionExample(): void {
 export class BankAccount {
   private balance: number;
 
+  /**
+   * Construction is the one operation that throws: there is no balance to
+   * leave untouched and no return value to report failure through, so an
+   * invalid opening balance must not produce an account at all.
+   */
   constructor(initialBalance: number) {
     validateSafeInteger(initialBalance);
     this.balance = initialBalance;
   }
 
-  deposit(amount: number): void {
-    validateSafeInteger(amount);
+  /**
+   * Deposit an amount. Returns true when the balance changed.
+   *
+   * Every failure mode - an amount that is not a safe integer, a negative
+   * amount, or an overflow - is reported the same way: log it, leave the
+   * balance untouched, and return false. Validation happens inside the try so
+   * that bad input and arithmetic overflow cannot take different exits.
+   */
+  deposit(amount: number): boolean {
     try {
+      validateSafeInteger(amount);
+      if (amount < 0) {
+        throw new ArithmeticError(`Deposit amount must not be negative, got ${amount}`);
+      }
       this.balance = safeAdd(this.balance, amount);
       console.log(`Deposited: $${amount}, New balance: $${this.balance}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Deposit failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 
-  withdraw(amount: number): void {
-    validateSafeInteger(amount);
+  /**
+   * Withdraw an amount. Returns true when the balance changed.
+   *
+   * Mirrors deposit(): same validation, same log-and-return-false contract.
+   * Note that this deliberately permits the balance to go negative - the
+   * class demonstrates safe arithmetic, not an overdraft policy, and the
+   * underflow guard below is what stops it at MIN_SAFE_INTEGER.
+   */
+  withdraw(amount: number): boolean {
     try {
+      validateSafeInteger(amount);
+      if (amount < 0) {
+        throw new ArithmeticError(`Withdrawal amount must not be negative, got ${amount}`);
+      }
       this.balance = safeSubtract(this.balance, amount);
       console.log(`Withdrawn: $${amount}, New balance: $${this.balance}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Withdrawal failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 
