@@ -18,10 +18,10 @@ export default defineConfig({
       // almost entirely the demo functions each module runs under
       // `require.main === module`.
       thresholds: {
-        lines: 68,
-        statements: 69,
-        branches: 76,
-        functions: 69,
+        lines: 69,
+        statements: 70,
+        branches: 79,
+        functions: 70,
       },
     },
   },

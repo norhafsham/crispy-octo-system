@@ -178,27 +178,52 @@ export function rangeValidationExample(): void {
  * Example 7: Counter with safe increment/decrement
  */
 export class SafeCounter {
-  private count: number = 0;
+  private count: number;
 
-  increment(): void {
+  /**
+   * The starting count is a parameter so the overflow and underflow branches
+   * below are reachable: seeding at MAX_SAFE_INTEGER is the only practical
+   * way to exercise them, since counting there one step at a time is not.
+   * Defaults to 0, so `new SafeCounter()` behaves as before.
+   */
+  constructor(initialCount: number = 0) {
+    validateSafeInteger(initialCount);
+    this.count = initialCount;
+  }
+
+  /**
+   * Increment the count. Returns true when the count changed. Follows the
+   * same contract as BankAccount: on failure, log it, leave the count
+   * untouched, and return false.
+   */
+  increment(): boolean {
     try {
       this.count = safeIncrement(this.count);
       console.log(`Count incremented to: ${this.count}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Increment failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 
-  decrement(): void {
+  /**
+   * Decrement the count. Returns true when the count changed.
+   */
+  decrement(): boolean {
     try {
       this.count = safeDecrement(this.count);
       console.log(`Count decremented to: ${this.count}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Decrement failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 

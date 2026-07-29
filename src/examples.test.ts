@@ -126,4 +126,49 @@ describe('SafeCounter', () => {
     counter.decrement();
     expect(counter.getCount()).toBe(-1);
   });
+
+  it('defaults to a starting count of zero', () => {
+    expect(new SafeCounter().getCount()).toBe(0);
+  });
+
+  it('accepts a starting count', () => {
+    const counter = new SafeCounter(41);
+    expect(counter.increment()).toBe(true);
+    expect(counter.getCount()).toBe(42);
+  });
+
+  it('rejects an invalid starting count at construction', () => {
+    expect(() => new SafeCounter(1.5)).toThrow(ArithmeticError);
+    expect(() => new SafeCounter(Number.MAX_SAFE_INTEGER + 1)).toThrow(ArithmeticError);
+  });
+
+  it('leaves the count unchanged when incrementing past MAX_SAFE_INTEGER', () => {
+    // Only reachable because the starting count is now a constructor
+    // parameter; counting to MAX_SAFE_INTEGER one step at a time is not
+    // a viable test.
+    const counter = new SafeCounter(Number.MAX_SAFE_INTEGER);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(counter.increment()).toBe(false);
+
+    expect(counter.getCount()).toBe(Number.MAX_SAFE_INTEGER);
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Increment failed'));
+  });
+
+  it('leaves the count unchanged when decrementing past MIN_SAFE_INTEGER', () => {
+    const counter = new SafeCounter(Number.MIN_SAFE_INTEGER);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(counter.decrement()).toBe(false);
+
+    expect(counter.getCount()).toBe(Number.MIN_SAFE_INTEGER);
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Decrement failed'));
+  });
+
+  it('returns true from a successful increment and decrement', () => {
+    const counter = new SafeCounter();
+    expect(counter.increment()).toBe(true);
+    expect(counter.decrement()).toBe(true);
+    expect(counter.getCount()).toBe(0);
+  });
 });
