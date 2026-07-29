@@ -36,10 +36,34 @@ export class StorageSimulator {
   users: User[] = [];
   userMap: Map<number, User> = new Map();
 
+  /**
+   * Add a user to both the array and the id-keyed map.
+   *
+   * Ids must be unique: the array-based ("inefficient") functions and the
+   * map-based ("efficient") ones are only equivalent while `users` and
+   * `userMap` describe the same set. A duplicate id would silently overwrite
+   * the map entry while appending a second array entry, so it is rejected
+   * here rather than left to diverge.
+   */
   addUser(user: User): void {
+    if (this.userMap.has(user.id)) {
+      throw new Error(`Duplicate user id: ${user.id}`);
+    }
     this.users.push(user);
     this.userMap.set(user.id, user);
   }
+}
+
+/**
+ * Format a gas-savings percentage against a baseline. An empty workload has a
+ * baseline of 0 gas, which would otherwise divide by zero and print
+ * `-Infinity%`.
+ */
+export function formatGasSavings(optimizedGas: number, baselineGas: number): string {
+  if (baselineGas === 0) {
+    return 'n/a (no work to do)';
+  }
+  return `${((1 - optimizedGas / baselineGas) * 100).toFixed(1)}%`;
 }
 
 // ============================================================================
@@ -103,7 +127,7 @@ export function efficientArrayAccess(storage: StorageSimulator): number {
   console.log(`   Total points: ${totalPoints}`);
   console.log(`   Estimated gas: ${estimatedGas.toLocaleString()}`);
   console.log(`   Time: ${(endTime - startTime).toFixed(3)}ms`);
-  console.log(`   Gas savings: ${((1 - estimatedGas / (storage.users.length * 2100)) * 100).toFixed(1)}%\n`);
+  console.log(`   Gas savings: ${formatGasSavings(estimatedGas, storage.users.length * 2100)}\n`);
 
   return totalPoints;
 }
@@ -157,7 +181,7 @@ export function efficientStructAccess(user: User): number {
   console.log(`   User: ${cachedUser.address}`);
   console.log(`   Result: ${result}`);
   console.log(`   Estimated gas: ${estimatedGas.toLocaleString()}`);
-  console.log(`   Gas savings: ${((1 - estimatedGas / (4 * 2100)) * 100).toFixed(1)}%\n`);
+  console.log(`   Gas savings: ${formatGasSavings(estimatedGas, 4 * 2100)}\n`);
 
   return result;
 }
@@ -213,7 +237,7 @@ export function efficientMappingLookup(storage: StorageSimulator, userId: number
   console.log(`   Storage reads: 1`);
   console.log(`   Estimated gas: ${estimatedGas.toLocaleString()}`);
   console.log(`   Time: ${(endTime - startTime).toFixed(3)}ms`);
-  console.log(`   Gas savings: ${((1 - estimatedGas / (storage.users.length * 2100)) * 100).toFixed(1)}%\n`);
+  console.log(`   Gas savings: ${formatGasSavings(estimatedGas, storage.users.length * 2100)}\n`);
 
   return user || null;
 }
@@ -253,17 +277,19 @@ export function inefficientMultiPassAggregation(storage: StorageSimulator): {
 
   const endTime = performance.now();
   const estimatedGas = arraySize * 3 * 2100; // 3 passes × N storage reads
+  // An empty array has no average level; report 0 rather than 0/0 = NaN.
+  const averageLevel = arraySize === 0 ? 0 : totalLevel / arraySize;
 
   console.log(`❌ Inefficient Multi-Pass Aggregation`);
   console.log(`   Users: ${arraySize}`);
   console.log(`   Active users: ${activeCount}`);
   console.log(`   Total points: ${totalPoints}`);
-  console.log(`   Average level: ${(totalLevel / arraySize).toFixed(2)}`);
+  console.log(`   Average level: ${averageLevel.toFixed(2)}`);
   console.log(`   Passes: 3`);
   console.log(`   Estimated gas: ${estimatedGas.toLocaleString()}`);
   console.log(`   Time: ${(endTime - startTime).toFixed(3)}ms\n`);
 
-  return { totalPoints, activeCount, averageLevel: totalLevel / arraySize };
+  return { totalPoints, activeCount, averageLevel };
 }
 
 /**
@@ -295,18 +321,20 @@ export function efficientSinglePassAggregation(storage: StorageSimulator): {
 
   const endTime = performance.now();
   const estimatedGas = 2100 + arraySize * 3; // Single storage read + memory passes
+  // An empty array has no average level; report 0 rather than 0/0 = NaN.
+  const averageLevel = arraySize === 0 ? 0 : totalLevel / arraySize;
 
   console.log(`✅ Efficient Single-Pass Aggregation`);
   console.log(`   Users: ${arraySize}`);
   console.log(`   Active users: ${activeCount}`);
   console.log(`   Total points: ${totalPoints}`);
-  console.log(`   Average level: ${(totalLevel / arraySize).toFixed(2)}`);
+  console.log(`   Average level: ${averageLevel.toFixed(2)}`);
   console.log(`   Passes: 1`);
   console.log(`   Estimated gas: ${estimatedGas.toLocaleString()}`);
   console.log(`   Time: ${(endTime - startTime).toFixed(3)}ms`);
-  console.log(`   Gas savings: ${((1 - estimatedGas / (arraySize * 3 * 2100)) * 100).toFixed(1)}%\n`);
+  console.log(`   Gas savings: ${formatGasSavings(estimatedGas, arraySize * 3 * 2100)}\n`);
 
-  return { totalPoints, activeCount, averageLevel: totalLevel / arraySize };
+  return { totalPoints, activeCount, averageLevel };
 }
 
 // ============================================================================
@@ -372,9 +400,7 @@ export function efficientBatchUpdates(storage: StorageSimulator, updates: Update
   console.log(`   Operations: O(n) = ${updates.length}`);
   console.log(`   Estimated gas: ${estimatedGas.toLocaleString()}`);
   console.log(`   Time: ${(endTime - startTime).toFixed(3)}ms`);
-  console.log(
-    `   Gas savings: ${((1 - estimatedGas / (updates.length * storage.users.length * 2100)) * 100).toFixed(1)}%\n`
-  );
+  console.log(`   Gas savings: ${formatGasSavings(estimatedGas, updates.length * storage.users.length * 2100)}\n`);
 }
 
 // ============================================================================

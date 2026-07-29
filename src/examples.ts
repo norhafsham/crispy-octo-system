@@ -61,32 +61,65 @@ export function overflowDetectionExample(): void {
 export class BankAccount {
   private balance: number;
 
+  /**
+   * Construction is the one operation that throws: there is no balance to
+   * leave untouched and no return value to report failure through, so an
+   * invalid opening balance must not produce an account at all.
+   */
   constructor(initialBalance: number) {
     validateSafeInteger(initialBalance);
     this.balance = initialBalance;
   }
 
-  deposit(amount: number): void {
-    validateSafeInteger(amount);
+  /**
+   * Deposit an amount. Returns true when the balance changed.
+   *
+   * Every failure mode - an amount that is not a safe integer, a negative
+   * amount, or an overflow - is reported the same way: log it, leave the
+   * balance untouched, and return false. Validation happens inside the try so
+   * that bad input and arithmetic overflow cannot take different exits.
+   */
+  deposit(amount: number): boolean {
     try {
+      validateSafeInteger(amount);
+      if (amount < 0) {
+        throw new ArithmeticError(`Deposit amount must not be negative, got ${amount}`);
+      }
       this.balance = safeAdd(this.balance, amount);
       console.log(`Deposited: $${amount}, New balance: $${this.balance}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Deposit failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 
-  withdraw(amount: number): void {
-    validateSafeInteger(amount);
+  /**
+   * Withdraw an amount. Returns true when the balance changed.
+   *
+   * Mirrors deposit(): same validation, same log-and-return-false contract.
+   * Note that this deliberately permits the balance to go negative - the
+   * class demonstrates safe arithmetic, not an overdraft policy, and the
+   * underflow guard below is what stops it at MIN_SAFE_INTEGER.
+   */
+  withdraw(amount: number): boolean {
     try {
+      validateSafeInteger(amount);
+      if (amount < 0) {
+        throw new ArithmeticError(`Withdrawal amount must not be negative, got ${amount}`);
+      }
       this.balance = safeSubtract(this.balance, amount);
       console.log(`Withdrawn: $${amount}, New balance: $${this.balance}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Withdrawal failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 
@@ -145,27 +178,52 @@ export function rangeValidationExample(): void {
  * Example 7: Counter with safe increment/decrement
  */
 export class SafeCounter {
-  private count: number = 0;
+  private count: number;
 
-  increment(): void {
+  /**
+   * The starting count is a parameter so the overflow and underflow branches
+   * below are reachable: seeding at MAX_SAFE_INTEGER is the only practical
+   * way to exercise them, since counting there one step at a time is not.
+   * Defaults to 0, so `new SafeCounter()` behaves as before.
+   */
+  constructor(initialCount: number = 0) {
+    validateSafeInteger(initialCount);
+    this.count = initialCount;
+  }
+
+  /**
+   * Increment the count. Returns true when the count changed. Follows the
+   * same contract as BankAccount: on failure, log it, leave the count
+   * untouched, and return false.
+   */
+  increment(): boolean {
     try {
       this.count = safeIncrement(this.count);
       console.log(`Count incremented to: ${this.count}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Increment failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 
-  decrement(): void {
+  /**
+   * Decrement the count. Returns true when the count changed.
+   */
+  decrement(): boolean {
     try {
       this.count = safeDecrement(this.count);
       console.log(`Count decremented to: ${this.count}`);
+      return true;
     } catch (error) {
       if (error instanceof ArithmeticError) {
         console.error(`Decrement failed: ${error.message}`);
+        return false;
       }
+      throw error;
     }
   }
 

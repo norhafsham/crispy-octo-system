@@ -17,6 +17,7 @@ There are no runtime dependencies — TypeScript/ts-node and vitest are the only
 npm install          # install dev dependencies (typescript, ts-node, vitest, @types/node)
 npm run check         # tsc --noEmit — typecheck the whole src/ tree
 npm test               # vitest run — run the unit test suite (*.test.ts next to each source file)
+npm run test:coverage   # vitest run --coverage — same suite plus a v8 coverage report (config in vitest.config.ts)
 npm run build          # tsc — emit compiled JS + declarations to dist/
 npm run example         # ts-node src/examples.ts — safe-arithmetic demos
 npm run event-example    # ts-node src/event-emission-examples.ts
