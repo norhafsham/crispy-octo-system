@@ -418,8 +418,10 @@ export function generateTestData(): StorageSimulator {
       id: i,
       address: `0x${i.toString().padStart(40, '0')}`,
       points: randomInt(0, 1000),
-      active: randomInt(0, 10) > 3,
-      verified: randomInt(0, 10) > 4,
+      // randomInt(0, 10) yields 0-9, so `>= 3` is 7/10 and `>= 4` is 6/10 -
+      // the same rates as the `Math.random() > 0.3` / `> 0.4` these replaced.
+      active: randomInt(0, 10) >= 3, // 70% active
+      verified: randomInt(0, 10) >= 4, // 60% verified
       level: randomInt(1, 11),
     };
     storage.addUser(user);
