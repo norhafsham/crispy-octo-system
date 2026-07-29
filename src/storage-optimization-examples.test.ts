@@ -3,6 +3,7 @@ import {
   StorageSimulator,
   User,
   Update,
+  formatGasSavings,
   inefficientArrayAccess,
   efficientArrayAccess,
   inefficientStructAccess,
@@ -13,6 +14,8 @@ import {
   efficientSinglePassAggregation,
   inefficientBatchUpdates,
   efficientBatchUpdates,
+  generateTestData,
+  generateTestUpdates,
 } from './storage-optimization-examples';
 
 function makeUser(overrides: Partial<User>): User {
@@ -101,6 +104,92 @@ describe('aggregation: inefficient vs. efficient parity', () => {
 
     expect(inefficient).toEqual({ totalPoints: 60, activeCount: 2, averageLevel: 4 });
     expect(efficient).toEqual(inefficient);
+  });
+
+  it('report a zero average level for empty storage instead of NaN', () => {
+    // Regression: averageLevel was totalLevel / arraySize, i.e. 0 / 0 = NaN.
+    const inefficient = inefficientMultiPassAggregation(new StorageSimulator());
+    const efficient = efficientSinglePassAggregation(new StorageSimulator());
+
+    expect(inefficient).toEqual({ totalPoints: 0, activeCount: 0, averageLevel: 0 });
+    expect(efficient).toEqual(inefficient);
+    expect(Number.isNaN(inefficient.averageLevel)).toBe(false);
+    expect(Number.isNaN(efficient.averageLevel)).toBe(false);
+  });
+});
+
+describe('empty storage across every pattern', () => {
+  it('does not produce NaN, Infinity, or a throw in any inefficient/efficient pair', () => {
+    expect(inefficientArrayAccess(new StorageSimulator())).toBe(0);
+    expect(efficientArrayAccess(new StorageSimulator())).toBe(0);
+    expect(inefficientLinearSearch(new StorageSimulator(), 1)).toBeNull();
+    expect(efficientMappingLookup(new StorageSimulator(), 1)).toBeNull();
+    expect(() => inefficientBatchUpdates(new StorageSimulator(), [])).not.toThrow();
+    expect(() => efficientBatchUpdates(new StorageSimulator(), [])).not.toThrow();
+  });
+});
+
+describe('parity over randomized data', () => {
+  // The whole point of this module is that each efficientX is equivalent to
+  // its inefficientX. The fixtures above check that against hand-built cases;
+  // these check it against the generated data the demo actually runs on.
+  it('holds for read-only patterns across a full generated dataset', () => {
+    const storage = generateTestData();
+
+    expect(storage.users.length).toBe(storage.userMap.size);
+    expect(efficientArrayAccess(storage)).toBe(inefficientArrayAccess(storage));
+    expect(efficientSinglePassAggregation(storage)).toEqual(inefficientMultiPassAggregation(storage));
+
+    storage.users.forEach((user) => {
+      expect(efficientMappingLookup(storage, user.id)?.id).toBe(inefficientLinearSearch(storage, user.id)?.id);
+      expect(efficientStructAccess(user)).toBe(inefficientStructAccess(user));
+    });
+  });
+
+  it('holds for batch updates applied to identical copies of a generated dataset', () => {
+    const source = generateTestData();
+    const updates = generateTestUpdates(25);
+
+    const storageA = makeStorage(source.users.map((user) => ({ ...user })));
+    const storageB = makeStorage(source.users.map((user) => ({ ...user })));
+
+    inefficientBatchUpdates(storageA, updates);
+    efficientBatchUpdates(storageB, updates);
+
+    expect(storageA.users).toEqual(storageB.users);
+  });
+});
+
+describe('formatGasSavings', () => {
+  it('computes a percentage against a non-zero baseline', () => {
+    expect(formatGasSavings(2100, 210000)).toBe('99.0%');
+    expect(formatGasSavings(50, 100)).toBe('50.0%');
+  });
+
+  it('returns a placeholder instead of -Infinity for an empty workload', () => {
+    // Regression: `(1 - gas / 0) * 100` printed "-Infinity%".
+    expect(formatGasSavings(2100, 0)).toBe('n/a (no work to do)');
+  });
+});
+
+describe('StorageSimulator', () => {
+  it('keeps the array and the map describing the same set', () => {
+    const storage = makeStorage([makeUser({ id: 1 }), makeUser({ id: 2 })]);
+
+    expect(storage.users.length).toBe(storage.userMap.size);
+    storage.users.forEach((user) => expect(storage.userMap.get(user.id)).toBe(user));
+  });
+
+  it('rejects a duplicate user id rather than letting array and map diverge', () => {
+    // Regression: the second addUser appended to `users` but overwrote the
+    // single `userMap` entry, so array-based and map-based functions silently
+    // disagreed from that point on.
+    const storage = makeStorage([makeUser({ id: 1, points: 10 })]);
+
+    expect(() => storage.addUser(makeUser({ id: 1, points: 99 }))).toThrow('Duplicate user id: 1');
+    expect(storage.users.length).toBe(1);
+    expect(storage.userMap.size).toBe(1);
+    expect(storage.userMap.get(1)?.points).toBe(10);
   });
 });
 

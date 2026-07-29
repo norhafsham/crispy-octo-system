@@ -84,6 +84,36 @@ describe('Token', () => {
     expect(emitted).toEqual(['Transfer', 'AllowanceSpent']);
   });
 
+  it('handles a zero-amount transferFrom against an owner who never approved', () => {
+    const token = new Token();
+    const emitted: string[] = [];
+    token.on('AllowanceSpent', (event) => emitted.push(`AllowanceSpent:${event.remaining}`));
+
+    // Regression: `allowed < amount` is false when both are 0, so this reaches
+    // the allowance write for an owner with no allowance map at all.
+    expect(() => token.transferFrom('spender', 'alice', 'bob', 0)).not.toThrow();
+
+    expect(token.allowanceOf('alice', 'spender')).toBe(0);
+    expect(token.balanceOf('alice')).toBe(0);
+    expect(token.balanceOf('bob')).toBe(0);
+    expect(emitted).toEqual(['AllowanceSpent:0']);
+  });
+
+  it('leaves the allowance intact when transferFrom fails on insufficient balance', () => {
+    const token = new Token();
+    const emitted: string[] = [];
+    token.mint('alice', 10);
+    token.approve('alice', 'exchange', 500);
+    token.on('AllowanceSpent', () => emitted.push('AllowanceSpent'));
+
+    // The balance check inside transfer() runs before the allowance is
+    // decremented, so a failed spend must not consume any allowance.
+    expect(() => token.transferFrom('exchange', 'alice', 'bob', 100)).toThrow('Insufficient balance');
+    expect(token.allowanceOf('alice', 'exchange')).toBe(500);
+    expect(token.balanceOf('alice')).toBe(10);
+    expect(emitted).toEqual([]);
+  });
+
   it('throws when spending more than the approved allowance', () => {
     const token = new Token();
     token.mint('alice', 1000);

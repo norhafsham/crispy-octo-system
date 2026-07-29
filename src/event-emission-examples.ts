@@ -81,11 +81,22 @@ export class Token extends EventEmitter {
   // PATTERN 3: APPROVAL AND ALLOWANCE MANAGEMENT
   // ==========================================================================
 
-  approve(owner: string, spender: string, amount: number): void {
-    if (!this.allowances.has(owner)) {
-      this.allowances.set(owner, new Map());
+  /**
+   * Get the owner's allowance map, creating it on first use. Every write to
+   * `allowances` goes through here so no caller has to assume the entry
+   * already exists.
+   */
+  private allowancesFor(owner: string): Map<string, number> {
+    let ownerAllowances = this.allowances.get(owner);
+    if (!ownerAllowances) {
+      ownerAllowances = new Map();
+      this.allowances.set(owner, ownerAllowances);
     }
-    this.allowances.get(owner)!.set(spender, amount);
+    return ownerAllowances;
+  }
+
+  approve(owner: string, spender: string, amount: number): void {
+    this.allowancesFor(owner).set(spender, amount);
     this.emit('Approval', { owner, spender, amount });
   }
 
@@ -99,7 +110,7 @@ export class Token extends EventEmitter {
       throw new Error(`Allowance exceeded: ${spender} may spend ${allowed} of ${owner}'s tokens, requested ${amount}`);
     }
     this.transfer(owner, to, amount);
-    this.allowances.get(owner)!.set(spender, allowed - amount);
+    this.allowancesFor(owner).set(spender, allowed - amount);
     this.emit('AllowanceSpent', { owner, spender, amount, remaining: allowed - amount });
   }
 }
