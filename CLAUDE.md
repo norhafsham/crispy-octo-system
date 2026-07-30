@@ -33,7 +33,7 @@ To exercise a single exported function without running a whole file's demo block
 npx ts-node -e "import { safeAdd } from './src/arithmetic-utils'; console.log(safeAdd(2, 3))"
 ```
 
-CI runs CodeQL (`.github/workflows/codeql.yml`, static analysis on push/PR to `main` and weekly) and a test workflow (`.github/workflows/test.yml`: `npm run check` + `npm test` on push/PR to `main`).
+CI runs CodeQL (`.github/workflows/codeql.yml`, static analysis on push/PR to `main` and weekly) and a test workflow (`.github/workflows/test.yml`: `npm ci` + `npm run check` + `npm run test:coverage` on push/PR to `main` — note CI runs the coverage variant, not bare `npm test`).
 
 `tsconfig.json` has `strict: true` (ES2020, commonjs, rootDir `src` → outDir `dist`). Code throughout relies on strict-mode patterns (`??`, `?.`, non-null `!` only where a prior check guarantees presence) — keep new code compiling clean under strict mode rather than loosening the config.
 
