@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/root/.local/bin/graphify hook-guard search"
+            "command": "sh -c 'if command -v graphify >/dev/null 2>&1; then exec graphify hook-guard search; fi'"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/root/.local/bin/graphify hook-guard read"
+            "command": "sh -c 'if command -v graphify >/dev/null 2>&1; then exec graphify hook-guard read; fi'"
           }
         ]
       }
