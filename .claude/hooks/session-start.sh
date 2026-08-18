@@ -37,4 +37,14 @@ else
     || python3 -m pip install --quiet --break-system-packages graphifyy
 fi
 
+# graphify classifies files by extension against hardcoded sets and does not know
+# .mdc, so .cursor/rules/*.mdc would be silently dropped from the corpus. This
+# must run AFTER the install above: `uv tool install --upgrade` replaces
+# site-packages, reverting the patch every time. Non-fatal — a failed patch costs
+# one file in the graph, not a broken session.
+if [ -x scripts/patch-graphify-extensions.py ]; then
+  python3 scripts/patch-graphify-extensions.py || \
+    echo "session-start: WARNING - .mdc extension patch failed; .cursor/rules/*.mdc will be unclassified" >&2
+fi
+
 echo "session-start: done"
