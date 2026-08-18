@@ -1,1 +1,21 @@
-ton-blockchain-docs/
+# ton-blockchain-docs/ is a vendored documentation site. Its prose and source are
+# worth graphing; its media is not — 270 images each require their own vision
+# subagent (the extraction spec gives images a dedicated chunk because vision
+# needs separate context), which costs roughly eight times the rest of the corpus
+# combined for wallet screenshots and UI captures.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.m4v
+*.mp3
+*.wav
+*.m4a
+*.ogg
