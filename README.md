@@ -20,10 +20,13 @@ Unchecked arithmetic operations can lead to unexpected behavior and security vul
 - **safeDivide()** - Division with zero-check
 - **safeIncrement()** - Safe increment with overflow check
 - **safeDecrement()** - Safe decrement with underflow check
+- **safeModulo()** - Modulo with zero-check
+- **safePower()** - Exponentiation with overflow validation
 
 ### Validation Utilities
 - **isWithinSafeRange()** - Check if a value is a safe integer
 - **getSafeRange()** - Get the safe integer limits for JavaScript
+- **validateSafeInteger()** - Throw `ArithmeticError` if a value is outside that range
 
 ## 📁 Project Structure
 
@@ -31,12 +34,31 @@ Unchecked arithmetic operations can lead to unexpected behavior and security vul
 .
 ├── .github/
 │   └── workflows/
-│       └── codeql.yml          # CodeQL Code Scanning workflow
+│       ├── codeql.yml                        # CodeQL Code Scanning workflow
+│       └── test.yml                          # Typecheck + tests with coverage
+├── docs/                                     # Solidity-side reference guides
+├── scripts/                                  # graphify maintenance tooling (Python)
 ├── src/
-│   ├── arithmetic-utils.ts     # Core safe arithmetic functions
-│   └── examples.ts              # Usage examples
-└── README.md                    # This file
+│   ├── arithmetic-utils.ts                   # Core safe arithmetic functions
+│   ├── examples.ts                           # Usage examples (BankAccount, SafeCounter)
+│   ├── event-emission-examples.ts            # Smart-contract event patterns (simulated)
+│   ├── storage-optimization-examples.ts      # Storage/gas patterns (simulated)
+│   └── *.test.ts                             # Vitest suites, one per source file
+├── ton-blockchain-docs/                      # Vendored copy of ton-blockchain/docs
+├── tsconfig.json
+├── vitest.config.ts
+└── README.md                                 # This file
 ```
+
+`ton-blockchain-docs/` is a vendored copy of the upstream
+[ton-blockchain/docs](https://github.com/ton-blockchain/docs) site. It is a
+separate, self-contained npm project, is not built or tested by this
+repository's CI, and should not be edited here — but it accounts for the large
+majority of files in the tree, so scope repo-wide searches to `src/`.
+
+The two `*-examples.ts` modules above *simulate* Solidity/EVM behavior in plain
+TypeScript. There is no blockchain or gas metering involved; their
+`estimatedGas` numbers are illustrative constants.
 
 ## 🔒 Safe Integer Range in JavaScript
 
@@ -46,6 +68,13 @@ JavaScript's safe integer range is defined by IEEE 754 double-precision floating
 - **MIN_SAFE_INTEGER**: -9,007,199,254,740,991 (-(2^53 - 1))
 
 Operations outside this range may lose precision.
+
+**These utilities are integer-only.** Every operand *and every result* is
+checked with `Number.isInteger`, so passing a fractional value — or producing
+one — throws `ArithmeticError`. `safeMultiply(100, 1.05)` and
+`safeDivide(10, 4)` both throw. Represent fractional quantities as scaled
+integers (money in cents, for example) and divide only where the result
+divides evenly.
 
 ## 💻 Usage Examples
 
@@ -95,20 +124,31 @@ try {
 ```
 
 ### Real-world Example: Bank Transaction
+Because the utilities are integer-only, hold money as whole cents and apply
+rates with integer multiply-then-divide rather than a fractional factor:
+
 ```typescript
-import { safeAdd, safeSubtract, safeMultiply } from './src/arithmetic-utils';
+import { safeAdd, safeSubtract, safeMultiply, safeDivide, ArithmeticError } from './src/arithmetic-utils';
 
-let balance = 1000000;
+let balance = 100_000_000; // $1,000,000.00, in cents
 
-// Safe operations with error handling
 try {
-  balance = safeAdd(balance, 50000);      // Deposit
-  balance = safeSubtract(balance, 25000); // Withdrawal
-  balance = safeMultiply(balance, 1.05);  // Apply 5% interest
+  balance = safeAdd(balance, 5_000_000);      // Deposit $50,000.00
+  balance = safeSubtract(balance, 2_500_000); // Withdraw $25,000.00
+
+  // 5% interest: multiply first, then divide, so no fractional value is ever
+  // produced. safeMultiply(balance, 1.05) would throw.
+  const interest = safeDivide(safeMultiply(balance, 5), 100);
+  balance = safeAdd(balance, interest);       // 107,625,000 cents
 } catch (error) {
-  console.error('Transaction failed:', error.message);
+  if (error instanceof ArithmeticError) {
+    console.error('Transaction failed:', error.message);
+  }
 }
 ```
+
+See `src/examples.ts` for a fuller `BankAccount` that wraps each of these in
+its own try/catch and reports failure by returning `false` instead of throwing.
 
 ## 🔍 Code Scanning with CodeQL
 
@@ -169,15 +209,19 @@ const result = safeMultiply(Number.MAX_SAFE_INTEGER, 2);
 To run the example code:
 
 ```bash
-# Install dependencies (if using a build tool)
+# Install dev dependencies (required)
 npm install
 
-# Run examples with TypeScript
-npx ts-node src/examples.ts
+# Run the demos
+npm run example          # safe-arithmetic demos (src/examples.ts)
+npm run event-example    # event-emission patterns
+npm run storage-example  # storage/gas patterns
 
-# Or compile and run
-npm run build
-npm run start
+# Typecheck, test, build
+npm run check            # tsc --noEmit
+npm test                 # vitest run
+npm run test:coverage    # same suite plus a coverage report (what CI runs)
+npm run build            # emit JS + declarations to dist/
 ```
 
 ## 📚 Best Practices
@@ -211,6 +255,6 @@ Contributions are welcome! Please ensure:
 
 ---
 
-**Last Updated**: 2026-05-17
+**Last Updated**: 2026-08-29
 
 For more information about preventing arithmetic vulnerabilities, see the security advisories in the GitHub Security tab.

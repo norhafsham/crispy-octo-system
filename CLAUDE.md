@@ -64,7 +64,7 @@ Neither workflow builds, tests, or lints `ton-blockchain-docs/`.
 
 Bad-vs-good contrasts are marked inline with ❌/✅ in both code and docs (`event-emission-examples.ts`, `storage-optimization-examples.ts`, and the four `docs/*.md` files) — keep that style consistent when extending existing files.
 
-Note that `README.md`'s "Project Structure" section is stale — it predates the example/simulation modules and lists only `arithmetic-utils.ts` and `examples.ts`. Trust this file over it.
+`README.md` is the user-facing companion to this file: same project, aimed at someone consuming the safe-math API rather than working on the repo. Its structure block, command list, and code samples were brought in line with the checkout — every snippet in it executes as written. Keep it that way if you change `src/`: in particular the utilities are integer-only, so any README example that multiplies by a fractional rate is wrong.
 
 ## The vendored `ton-blockchain-docs/` tree
 
